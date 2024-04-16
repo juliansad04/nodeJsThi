@@ -9,12 +9,24 @@ exports.validateStudent = async (req, res, next) => {
     return res.status(400).send("Ngày sinh phải nhỏ hơn ngày hiện tại.");
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).send("Email không hợp lệ.");
+  }
+
   const existingStudent = await Student.getByEmail(email);
   if (existingStudent) {
     return res.status(400).send("Email đã tồn tại trong hệ thống.");
   }
 
-  if (!name || !birthday || !email) {
+  if (
+    !name ||
+    name.trim() === "" ||
+    !birthday ||
+    birthday.trim() === "" ||
+    !email ||
+    email.trim() === ""
+  ) {
     return res.status(400).send("Các trường không được để trống.");
   }
 
