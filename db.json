@@ -1,0 +1,18 @@
+{
+  "syllabus": [
+    {
+      "id": "1",
+      "name": "Lập trình PHP 1",
+      "credits": 3,
+      "min_gpa": 5,
+      "approved_date": "2024/04/20"
+    },
+    {
+      "id": "2",
+      "name": "Lập trình TypeScipt",
+      "credits": 3,
+      "min_gpa": 5,
+      "approved_date": "2024/04/20"
+    }
+  ]
+}
