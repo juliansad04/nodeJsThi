@@ -1,151 +1,210 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { UserInterface } from "./model/Userinterface";
-// import  axios  from "axios";
-
-
+import { SyllabusInterface } from "./model/SyllabusInterface";
 import {
-    validate,                   // Hàm kiểm tra xem một đối tượng có tuân thủ các ràng buộc được xác định hay không.
-    validateOrReject,           // Hàm kiểm tra và nếu không tuân thủ các ràng buộc sẽ ném ra một ngoại lệ.
-    Contains,                   // Kiểm tra xem một chuỗi có chứa một chuỗi con cụ thể hay không.
-    IsInt,                      // Kiểm tra xem một giá trị có phải là một số nguyên hay không.
-    Length,                     // Kiểm tra độ dài của một chuỗi hoặc mảng có nằm trong một phạm vi cụ thể hay không.
-    IsEmail,                    // Kiểm tra xem một chuỗi có đúng định dạng của một địa chỉ email hay không.
-    IsFQDN,                     // Kiểm tra xem một chuỗi có phải là một tên miền đầy đủ (fully qualified domain name) hay không.
-    IsDate,                     // Kiểm tra xem một giá trị có phải là một ngày hợp lệ hay không.
-    Min,                        // Kiểm tra xem một giá trị có lớn hơn hoặc bằng một giá trị tối thiểu cụ thể hay không.
-    Max,                        // Kiểm tra xem một giá trị có nhỏ hơn hoặc bằng một giá trị tối đa cụ thể hay không.
-    IsNotEmpty,                 // Kiểm tra xem một giá trị có rỗng (empty) hay không.
-    MinLength,                  // Kiểm tra xem độ dài của một chuỗi có lớn hơn hoặc bằng một giá trị tối thiểu cụ thể hay không.
-    Matches,
-} from 'class-validator';
-import { error } from "console";
+  validate,
+  IsNotEmpty,
+  IsEmail,
+  MinLength,
+  Matches,
+  Min,
+  Max,
+} from "class-validator";
 
+const url: string = "http://localhost:3000/syllabus";
 
-// Gọi dữ liệu API
-const url: string = 'http://localhost:3000/users';
+class App implements SyllabusInterface {
+  public id: string;
 
-fetch(url)
-  .then(response => response.json())
-  .then((data: any[]) => {
-    // Hiển thị dữ liệu trên giao diện
-    const userList: HTMLElement | null = document.getElementById('user-list');
-
-    if (userList) {
-      data.forEach(userData => {
-        const row: HTMLTableRowElement = document.createElement('tr');
-        row.innerHTML = `
-          <td>${userData.id}</td>
-          <td>${userData.name}</td>
-          <td>${userData.email}</td>
-          <td>${userData.password}</td>
-          <td>
-            <button class="btn btn-primary">Sửa</button>
-            <button class="btn btn-danger">Xóa</button>
-          </td>
-        `;
-        userList.appendChild(row);
-      });
-    } else {
-      console.error('Error: Element with id "user-list" not found.');
-    }
+  @IsNotEmpty({
+    message: "Tên môn học không được để trống",
   })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+  public name: string;
 
+  @IsNotEmpty({
+    message: "Số tín chỉ không được để trống",
+  })
+  @Min(0, { message: "Số tín chỉ phải là số dương" })
+  public credits: number;
 
-class App implements UserInterface {
-    @IsNotEmpty({
-      message: "không được để trống"
-    }) 
-    public name: string;
+  @IsNotEmpty({
+    message: "Điểm tối thiểu để được qua môn không được để trống",
+  })
+  @Min(0, { message: "Điểm tối thiểu phải từ 0" })
+  @Max(10, { message: "Điểm tối thiểu phải nhỏ hơn hoặc bằng 10" })
+  public min_gpa: number;
 
-    @IsEmail({}, {
-      message: "phải có định dạng hợp lệ"
-    })  
-    @IsNotEmpty({
-      message: "không được để trống"
-    }) 
-    public email: string;
-    
-     @MinLength(8, {
-      message: "Mật khẩu phải ít nhất 8 ký tự"
-    })
-    @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, { 
-        message: "Phải ít nhất 8 ký tự,phải có ít nhất 1 chữ hoa,1 chữ thường và 1 số và 1 ký tự"
-    })
+  @IsNotEmpty({
+    message: "Ngày duyệt không được để trống",
+  })
+  public approved_date: string;
 
-    public password: string;
-    
-  //   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,}$/, { 
-  //     message: "Phải ít nhất 8 ký tự, phải có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"
-  // })
- 
-   
+  constructor() {
+    const buttonSubmit: HTMLElement = document.getElementById("submit");
+    buttonSubmit.addEventListener("click", () => {
+      this.handleSubmit();
+    });
 
+    this.fetchAndDisplayUsers();
+  }
 
-    constructor() {
-        const buttonSubmit: HTMLElement = document.getElementById("submit");
-        buttonSubmit.addEventListener("click", () => this.handleSubmit());
-        
+  async fetchAndDisplayUsers() {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch syllabus data");
       }
+      const syllabusList: any[] = await response.json();
+      this.displaySyllabus(syllabusList);
+    } catch (error) {
+      console.error("Error fetching syllabus data:", error);
+    }
+  }
 
-      async handleSubmit() {
-        const name: HTMLInputElement = document.getElementById("name") as HTMLInputElement;
-        const email: HTMLInputElement = document.getElementById("email") as HTMLInputElement;
-        const password: HTMLInputElement = document.getElementById("password") as HTMLInputElement;
-      
-        this.name = name.value;
-        this.email = email.value;
-        this.password = password.value;
-        
-             
-        const isValid = await this.Validator();
-        
-        // Nếu dữ liệu hợp lệ, thì mới log và thực hiện các thao tác tiếp theo
-        if (isValid) {
-            // Ghi dữ liệu vào console
-            console.log(this.name);
-            console.log(this.email);
-            console.log(this.password);
-        }
-        this.ClearError();
-        this.Validator();
-        
-      }
-      async Validator() {
-        try {
-          const errors = await validate(this);
-          if(errors.length === 0) {
-            return true; 
-          }
-          errors.forEach(element => {
-            const propertyName = element.property;
-            const errorConstraints = Object.values(element.constraints).join(". ");
-            const errorMessage = `${propertyName}: ${errorConstraints}`;
-            const errorElement = document.getElementById(propertyName);
-            if (errorElement) {
-              errorElement.classList.add("border-danger");
-              errorElement.nextElementSibling.textContent = errorMessage;
-            }
-          });
-          return false; 
-        } catch (validationErrors) {
-          console.error(validationErrors);
-          return false; 
-        }
-      }
-      ClearError() {
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-          input.classList.remove('border-danger');
-          const errorMessageElement = input.nextElementSibling;
-          if (errorMessageElement) {
-            errorMessageElement.textContent = '';
+  displaySyllabus(syllabusList: any[]) {
+    const syllabusTable: HTMLTableElement = document.getElementById(
+      "syllabus-table"
+    ) as HTMLTableElement;
+    syllabusTable.innerHTML = "";
+    syllabusList.forEach((syllabus) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+                <td>${syllabus.id}</td>
+                <td>${syllabus.name}</td>
+                <td>${syllabus.credits}</td>
+                <td>${syllabus.min_gpa}</td>
+                <td>${syllabus.approved_date}</td>
+                <td>
+                    <a class="btn btn-primary" href="edit.html?id=${syllabus.id}">Chỉnh sửa</a>
+                    <button class="btn btn-danger btn-delete" data-syllabus-id="${syllabus.id}">Xóa</button>
+                </td>
+            `;
+      const deleteButton = row.querySelector(".btn-delete");
+      if (deleteButton) {
+        deleteButton.addEventListener("click", () => {
+          const syllabusId = deleteButton.getAttribute("data-syllabus-id");
+          if (syllabusId) {
+            this.deleteSyllabus(syllabusId);
           }
         });
-      }  
-   
+      }
+      syllabusTable.appendChild(row);
+    });
+  }
+
+  async handleSubmit() {
+    const nameInput: HTMLInputElement = document.getElementById(
+      "name"
+    ) as HTMLInputElement;
+    const creditsInput: HTMLInputElement = document.getElementById(
+      "credits"
+    ) as HTMLInputElement;
+    const minGpaInput: HTMLInputElement = document.getElementById(
+      "min_gpa"
+    ) as HTMLInputElement;
+    const approvedDateInput: HTMLInputElement = document.getElementById(
+      "approved_date"
+    ) as HTMLInputElement;
+
+    const name = nameInput.value;
+    const credits = parseInt(creditsInput.value);
+    const minGpa = parseFloat(minGpaInput.value);
+    const approvedDate = approvedDateInput.value;
+
+    const isValid = await this.validateInputs(
+      name,
+      credits,
+      minGpa,
+      approvedDate
+    );
+
+    if (isValid) {
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            credits,
+            min_gpa: minGpa,
+            approved_date: approvedDate,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add syllabus");
+        }
+
+        console.log("Syllabus added successfully:", {
+          name,
+          credits,
+          min_gpa: minGpa,
+          approved_date: approvedDate,
+        });
+        await this.fetchAndDisplayUsers();
+      } catch (error) {
+        console.error("Error adding syllabus:", error);
+      }
+    } else {
+      event.preventDefault();
+    }
+  }
+
+  async deleteSyllabus(syllabusId: string) {
+    try {
+      const response = await fetch(`${url}/${syllabusId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete syllabus");
+      }
+
+      console.log("Syllabus deleted successfully");
+      await this.fetchAndDisplayUsers();
+    } catch (error) {
+      console.error("Error deleting syllabus:", error);
+    }
+  }
+
+  async validateInputs(
+    name: string,
+    credits: number,
+    minGpa: number,
+    approvedDate: string
+  ): Promise<boolean> {
+    try {
+      const syllabusData = {
+        name,
+        credits,
+        min_gpa: minGpa,
+        approved_date: approvedDate,
+      };
+
+      const errors = await validate(syllabusData);
+
+      if (errors.length === 0) {
+        return true;
+      }
+
+      errors.forEach((element: any) => {
+        const propertyName = element.property;
+        const errorConstraints = Object.values(element.constraints).join(". ");
+        const errorMessage = `${propertyName}: ${errorConstraints}`;
+        const errorElement = document.getElementById(propertyName);
+        if (errorElement) {
+          errorElement.classList.add("border-danger");
+          errorElement.nextElementSibling.textContent = errorMessage;
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Lỗi trong quá trình kiểm tra:", error);
+      return false;
+    }
+  }
 }
 
 new App();

@@ -30,6 +30,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "express": "^4.19.2",
-    "json-server": "^1.0.0-alpha.23"
+    "install": "^0.13.0",
+    "json-server": "^1.0.0-alpha.23",
+    "npm": "^10.5.2"
   }
 }
