@@ -41,12 +41,11 @@ function renderSyllabus(syllabus: Syllabus) {
 
 async function editSyllabus(syllabusId: string) {
   console.log(`Editing syllabus with ID ${syllabusId}`);
-  // Redirect to edit.html with syllabusId as parameter
   window.location.href = `edit.html?id=${syllabusId}`;
 }
 
 async function init() {
-  const syllabus = await fetchSyllabus("1"); // Fetching syllabus with ID "1"
+  const syllabus = await fetchSyllabus("1");
   if (syllabus) {
     renderSyllabus(syllabus);
   } else {

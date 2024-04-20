@@ -190,7 +190,10 @@ class App implements SyllabusInterface {
 
       errors.forEach((element: any) => {
         const propertyName = element.property;
-        const errorConstraints = Object.values(element.constraints).join(". ");
+        let errorConstraints = "";
+        for (const constraintName in element.constraints) {
+          errorConstraints += `${element.constraints[constraintName]}. `;
+        }
         const errorMessage = `${propertyName}: ${errorConstraints}`;
         const errorElement = document.getElementById(propertyName);
         if (errorElement) {
