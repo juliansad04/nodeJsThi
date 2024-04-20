@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "module": "es6",
+    "outDir": "./dist",
+    "target": "es5",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "jsx": "react",
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "lib": [
+      "es5",
+      "es2015",
+      "es6",
+      "dom"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
